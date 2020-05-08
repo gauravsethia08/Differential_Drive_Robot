@@ -1,0 +1,60 @@
+<?xml version = "1.0"?>
+
+<!--Defining Robot-->
+<robot name = "caster_wheel" xmlns:xacro = "http://www.ros.org/wiki/xacro">
+
+	<!--Defining Constants-->
+	<property name="M_PI" value="3.1415926535897931" />
+
+	<!--Defining Caster Wheel Constants-->
+	<property name = "caster_height" value = "0.04"/>
+	<property name = "caster_radius" value = "0.025"/>
+	<property name = "caster_mass" value = "0.5"/> <!--Mass in kg-->
+
+	<!--Marco for calculating Inertia of caster wheel-->
+	<xacro:macro name = "caster_inertia" params = "mass">
+		<inertial>
+			<mass value = "${mass}"/>
+			<!--INertia Matrix-->
+			<inertia ixx = "0.001" ixy = "0" ixz = "0" iyy = "0.001" iyz = "0" izz = "0.001"/>
+		</inertial>
+	</xacro:macro>
+
+	<!--Marco for Caster Wheel Definiation-->
+	<xacro:macro name = "caster_wheel" params = "fb parent X Y jX jY jZ">
+		<!--Defining Link-->
+		<link name = "caster_${fb}">
+			<!--Defining Visual Properties-->
+			<visual>
+				<geometry>
+					<sphere radius = "${caster_radius}"/>
+				</geometry>
+				<!--Defining Origin-->
+				<origin xyz = "${X} ${Y} 0" rpy = "${M_PI/2} 0 0"/>
+				<!--Defining Material-->
+				<material name = "Black"/>
+			</visual>
+			<!--Defining Collision-->
+			<collision>
+				<geometry>
+					<sphere radius = "${caster_radius}"/>
+				</geometry>
+				<!--Defining Origin-->
+				<origin xyz = "${X} ${Y} 0" rpy = "${M_PI_2} 0 0"/>
+			</collision>
+			<!--Defining Inertia-->
+			<caster_inertia mass = "${caster_mass}"/>
+		</link>
+
+		<!--Defining Joint-->
+		<joint name = "caster_${fb}_joint" type = "fixed">
+			<!--Defining Parent Link-->
+			<parent link = "${parent}"/>
+			<!--Defining Child Link-->
+			<child link = "caster_${fb}"/>
+			<!--Defining Origin-->
+			<origin xyz = "${jX} ${jY} ${jZ}" rpy = "${-M_PI/2} 0 0"/>
+		</joint>
+	</xacro:macro>
+
+</robot>

@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+
+<!-- Defining robot-->
+<robot name = "wheel" xmlns:xacro = "http://www.ros.org/wiki/xacro">
+
+	<!--Defining Constants-->
+	<property name = "M_PI" value = "3.14150"/>
+
+	<!--Defining wheel properties-->
+	<property name = "wheel_radius" value = "0.04"/>
+	<property name = "wheel_height" value = "0.02"/>
+	<property name = "wheel_mass" value = "2.5"/> <!--weight in kg-->
+
+	<!--Defining Origin Related Property-->
+	<property name = "base_x_origin_to_wheel_origin" value = "0.25"/>
+	<property name = "base_y_origin_to_wheel_origin" value = "0.30"/>
+	<property name = "base_z_origin_to_wheel_origin" value = "0.00"/>
+
+	<!--Defining Macro for the interia of the wheel-->
+	<xacro:macro name = "cylinder_inertia" params = "mass radius height">
+		<inertial>
+			<mass value = "${mass}"/>
+			<inertia ixx = "${mass * (3*radius*radius + height*height)/12}" ixy = "0" ixz = "0" iyy = "${mass * (3*radius*radius + height*height)/12}" iyz = "0" izz = "${mass*radius*radius/2}"/>
+		</inertial>
+	</xacro:macro>
+
+	<!--Defining Macro for wheel-->
+	<xacro:macro name = "wheel" params = "fb lr parent translateX translateY flipY">
+	<!--fb = front/back, lr = left/right-->
+		<!--Defining Link-->
+		<link name = "${fb}_${lr}_wheel">
+			<!--Visualization-->
+			<visual>
+				<geometry>
+					<cylinder length = "${wheel_height}" radius = "${wheel_radius}"/>
+				</geometry>
+				<!--origin-->
+				<origin xyz = "0 0 0" rpy = "${flipY * M_PI/2} 0 0"/>
+				<!--Material-->
+				<material name = "DarkGray"/>
+			</visual>
+			<!--Collision-->
+			<collision>
+				<!--Geometry-->
+				<geometry>
+					<cylinder length = "${wheel_height}" radius = "${wheel_radius}"/>
+				</geometry>
+				<!--origin-->
+				<origin xyz = "0 0 0" rpy = "${flipY * M_PI/2} 0 0"/>
+			</collision>
+			<!--Interial-->
+			<cylinder_interia mass = "${wheel_mass}" radius = "${wheel_radius}" height = "${wheel_height}"/>
+		</link>
+
+		<!--Defining Joint-->
+		<joint name = "${fb}_${lr}_wheel_joint" type = "continuous">
+			<!--Parent Link-->
+			<parent link = "${parent}"/>
+			<!--Child Link-->
+			<child link = "${fb}_${lr}_wheel"/>
+			<!--Origin-->
+			<origin xyz = "${translateX * base_x_origin_to_wheel_origin} ${translateY * base_y_origin_to_wheel_origin} ${base_z_origin_to_wheel_origin}" rpy = "0 0 0"/>
+			<!--Axis-->
+			<axis xyz = "0 1 0" rpy = "0 0"/>
+			<!--Limit-->
+			<limit effort = "100" velocity = "100"/>
+			<!--Dynamics-->
+			<dynamics damping = "0" friction = "0"/>
+		</joint>
+
+		<!--Defining Transmission-->
+		<transmission name = "${fb}_${lr}_wheel_joint_trans">
+			<!--Defining type of transmission-->
+			<type>transmission_interface/SimpleTransmission</type>
+			<!--Transmisison joint-->
+			<joint name = "${fb}_${lr}_wheel_joint"/>
+			<!--Defining Actuator-->
+			<actuator name = "${fb}_${lr}_wheel_joint_motor">
+				<hardwareInterface>EffortJointInterface</hardwareInterface>
+				<mechanicalReduction>1</mechanicalReduction>
+			</actuator>
+		</transmission>
+	</xacro:macro>
+
+</robot>
